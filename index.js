@@ -86,7 +86,44 @@ function getTransform(translation, ratio) {
 }
 
 function animaster() {
-    return {
+    const anim = {
+        addMove(duration, params) {
+            this._steps.push(['move', duration, params]);
+            return this;
+        },
+        addScale(duration, params) {
+            this._steps.push(['scale', duration, params]);
+            return this;
+        },
+        addFadeIn(duration) {
+            this._steps.push(['fadeIn', duration]);
+            return this;
+        },
+        addFadeOut(duration) {
+            this._steps.push(['fadeOut', duration]);
+            return this;
+        },
+
+        play(element) {
+            let timer = 0;
+            for (const item of this._steps) {
+                switch (item[0]) {
+                    case 'move':
+                        setTimeout(() => this.move(element, item[1], item[2]), timer);
+                        break;
+                    case 'scale':
+                        setTimeout(() => this.scale(element, item[1], item[2]), timer);
+                        break;
+                    case 'fadeIn':
+                        setTimeout(() => this.fadeIn(element, item[1]), timer);
+                        break;
+                    case 'fadeOut':
+                        setTimeout(() => this.move(element, item[1]), timer);
+                        break;
+                }
+                timer += item[1];
+            }
+        },
         fadeIn(element, duration) {
             element.style.transitionDuration =  `${duration}ms`;
             element.classList.remove('hide');
@@ -140,4 +177,17 @@ function animaster() {
             return {stop: () => clearInterval(b)}
         }
     }
+    anim._steps = [];
+    return anim;
 }
+
+const customAnimation = animaster()
+    .addMove(200, {x: 40, y: 40})
+    .addScale(800, 1.3)
+    .addMove(200, {x: 80, y: 0})
+    .addScale(800, 1)
+    .addMove(200, {x: 40, y: -40})
+    .addScale(800, 0.7)
+    .addMove(200, {x: 0, y: 0})
+    .addScale(800, 1);
+customAnimation.play(document.getElementById('fadeOutBlock'));
